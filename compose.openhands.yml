@@ -1,0 +1,46 @@
+services:
+  openhands-provisioner:
+    build:
+      context: ./provisioner
+    image: sih-openhands-provisioner:local
+    container_name: sih-openhands-provisioner
+    user: "0:0"
+    environment:
+      PROVISIONER_API_KEY: ${OPENHANDS_PROVISIONER_API_KEY:?Set OPENHANDS_PROVISIONER_API_KEY}
+      PUBLIC_URL: ${OPENHANDS_PUBLIC_URL:-http://localhost:8090}
+      DATABASE_PATH: /data/provisioner.db
+      OPENHANDS_IMAGE: ${OPENHANDS_IMAGE:-ghcr.io/openhands/agent-canvas:1.8.0}
+      DOCKER_NETWORK: sih-openhands
+      WORKSPACE_MEMORY_LIMIT: ${OPENHANDS_WORKSPACE_MEMORY_LIMIT:-4g}
+      WORKSPACE_CPU_LIMIT: ${OPENHANDS_WORKSPACE_CPU_LIMIT:-2}
+      WORKSPACE_PIDS_LIMIT: ${OPENHANDS_WORKSPACE_PIDS_LIMIT:-512}
+      WORKSPACE_STARTUP_TIMEOUT_SECONDS: ${OPENHANDS_WORKSPACE_STARTUP_TIMEOUT_SECONDS:-240}
+      LAUNCH_TICKET_TTL_SECONDS: 60
+      BROWSER_SESSION_TTL_SECONDS: 28800
+    ports:
+      - "8090:8090"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - openhands-provisioner-data:/data
+    networks:
+      - openhands
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/healthz', timeout=2)"
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  openhands-provisioner-data:
+    name: sih-openhands-provisioner-data
+
+networks:
+  openhands:
+    name: sih-openhands
+    driver: bridge

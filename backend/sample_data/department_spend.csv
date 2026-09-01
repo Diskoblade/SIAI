@@ -1,0 +1,13 @@
+department,category,quarter,amount
+Finance,Software,Q1,120000
+Finance,Travel,Q1,45000
+Finance,Software,Q2,98000
+HR,Training,Q1,30000
+HR,Recruitment,Q2,52000
+Legal,Consulting,Q1,75000
+Legal,Consulting,Q2,68000
+Engineering,Cloud,Q1,210000
+Engineering,Hardware,Q1,95000
+Engineering,Cloud,Q2,240000
+Administration,Facilities,Q1,60000
+Administration,Facilities,Q2,58000

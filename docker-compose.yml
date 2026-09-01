@@ -1,0 +1,42 @@
+# ONLYOFFICE Docs Community Edition for the Approval Note workflow.
+#
+# The FastAPI backend and Vite frontend currently run bare-metal (uvicorn/npm).
+# This compose file adds ONLYOFFICE locally; the Document Server reaches the
+# host-run backend via `host.docker.internal`. JWT security stays ENABLED.
+#
+# Start:   docker compose up -d
+# Secret:  set ONLYOFFICE_JWT_SECRET in a .env next to this file AND the SAME
+#          value as ONLYOFFICE_JWT_SECRET in backend/.env.
+
+services:
+  onlyoffice-documentserver:
+    image: onlyoffice/documentserver:8.2   # Community Edition
+    container_name: skp-onlyoffice
+    restart: unless-stopped
+    environment:
+      - JWT_ENABLED=true
+      - JWT_SECRET=${ONLYOFFICE_JWT_SECRET:?set ONLYOFFICE_JWT_SECRET in .env}
+      - JWT_HEADER=Authorization
+      - JWT_IN_BODY=true
+    ports:
+      - "8085:80"
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_log:/var/log/onlyoffice
+      - onlyoffice_cache:/var/lib/onlyoffice/documentserver/App_Data/cache/files
+      - onlyoffice_db:/var/lib/postgresql
+    extra_hosts:
+      # Lets the container reach the host-run backend on Linux; Docker Desktop
+      # (macOS/Windows) provides host.docker.internal automatically.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  onlyoffice_data:
+  onlyoffice_log:
+  onlyoffice_cache:
+  onlyoffice_db:
